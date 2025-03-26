@@ -84,16 +84,16 @@ int main() {
 
     for (int D : dim) {
         string filename = "3SAT_Dim=" + to_string(D) + ".csv";
-        int var_counter;
-        vector<vector<int>> clauses = readCSV(filename, var_counter);
+        int D_num;
+        vector<vector<int>> clauses = readCSV(filename, D_num);
         if (clauses.empty()) continue;  // 若檔案不存在則跳過
 
-        vector<int> assignment(var_counter, 0); // 初始變數賦值全為 0
+        vector<int> assignment(D_num, 0); // 初始變數賦值全為 0
         int expanded_nodes = 0;                 // 記錄已展開的節點數
         int max_nodes = pow(D, 3);              // 設定最大節點數 D^3
         
         if (DeepFS(clauses, assignment, 0, expanded_nodes, max_nodes)) {
-            for (int i = 0; i < var_counter; i++) {
+            for (int i = 0; i < D_num; i++) {
                 cout << assignment[i];
                 outFile << assignment[i] << " ";
             }
