@@ -76,19 +76,19 @@ bool DeepFS(vector<vector<int>> &clauses, vector<int> &assignment, int varIndex)
 
 int main() {
     vector<int> dim = {10, 20, 30, 40, 50};  //要處理的 D 值
-    ofstream outFile("result.txt");          //舒潔結果到txt檔案
+    ofstream outFile("result.txt");          //輸出結果到txt檔案
 
     for (int D : dim) {
         string filename = "3SAT_Dim=" + to_string(D) + ".csv";
-        int var_counter;
-        vector<vector<int>> clauses = readCSV(filename, var_counter);
+        int D_num;
+        vector<vector<int>> clauses = readCSV(filename, D_num);
         if (clauses.empty()) continue;  // 若檔案不存在則跳過
 
-        vector<int> assignment(var_counter, 0); // 初始變數賦值全為 0
+        vector<int> assignment(D_num, 0); // 初始變數賦值全為 0
         
 
         if (DeepFS(clauses, assignment, 0)) {
-            for (int i = 0; i < var_counter; i++) {
+            for (int i = 0; i < D_num; i++) {
                 cout << assignment[i];
                 outFile << assignment[i] << " ";
             }
