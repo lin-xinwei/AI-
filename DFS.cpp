@@ -4,6 +4,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cmath>  // 用於 pow()
+#include <chrono> //timer
 
 using namespace std;
 
@@ -92,19 +93,26 @@ int main() {
         int expanded_nodes = 0;                 // 記錄節點數
         int max_nodes = pow(D, 3);              // 節點最多D的3次方
         
+        auto start_time = chrono::high_resolution_clock::now(); // 計時start
+
         bool found = DeepFS(clauses, assignment, 0, expanded_nodes, max_nodes);
+        
+        auto end_time = chrono::high_resolution_clock::now();   // 計時end
+        // 計算執行時間
+        double duration = chrono::duration<double>(end_time - start_time).count();
+
 
         if (found) {
-            outFile << "Solution found. Expanded nodes: " << expanded_nodes << "\n";
-            cout << "Solution found for " << filename << ". Expanded nodes: " << expanded_nodes << endl;
+            outFile << "Solution found. Expanded nodes: " << expanded_nodes << ". Time taken: " << duration << " seconds\n"<< endl;
+            cout << "Solution found for " << filename << ". Expanded nodes: " << expanded_nodes << ". Time taken: " << duration << " seconds\n"<< endl;
             outFile << "Assignment:";
             for (int i = 0; i < D_num; i++) {
                 outFile << " " << assignment[i];
             }
             outFile << "\n\n";
         } else {
-            outFile << "No solution found for " << filename << ". Expanded nodes: " << expanded_nodes << "\n\n";
-            cout << "No solution found for " << filename << ". Expanded nodes: " << expanded_nodes << endl;
+            outFile << "No solution found for " << filename << ". Expanded nodes: " << expanded_nodes << ". Time taken: " << duration << " seconds\n"<< endl;
+            cout << "No solution found for " << filename << ". Expanded nodes: " << expanded_nodes << ". Time taken: " << duration << " seconds\n"<< endl;
         }
     }
 
