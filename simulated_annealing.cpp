@@ -2,14 +2,14 @@
 #include <vector>
 #include <cmath>
 #include <fstream>
-#include <sstream>
 #include <random>
-
 #include <algorithm>
 #include <ctime>
+#include <chrono>
 
 using namespace std;
 
+// 定義城市結構(x, y)座標
 struct city {
     double x, y;
 };
@@ -31,10 +31,11 @@ double cal_length(const vector<city> &cities, const vector<int> &tour) {
 }
 
 // 讀取城市(x, y)座標
-void readCities(const string &filename, vector<city> &cities) {
+void read_city(const string &filename, vector<city> &cities) {
     ifstream file(filename);
+    int num_of_city;
     city city;
-    while (file >> city.x >> city.y) {
+    while (file >> num_of_city >> city.x >> city.y) {
         cities.push_back(city);
     }
     file.close();
@@ -67,27 +68,32 @@ vector<int> simul_anneal(const vector<city> &cities) {
     int maxEvals = 1000 * n;    //限制條件，設定上限
 
     vector<int> current = rand_generate_tour(n);
-    double currentCost = cal_length(cities, current);
+    double current_cost = cal_length(cities, current);
 
     vector<int> best = current;
-    double bestCost = currentCost;
+    double best_cost = current_cost;
 
     double T = 10000;         // 初始溫度
-    double coolingRate = 0.995;
+    double coolingRate = 0.999; // 降溫速率
 
     int evals = 0;          // 評估次數
-    while (evals < maxEvals && T > 1e-4) {
+    while (evals < maxEvals && T > 1e-100) {
         vector<int> neighbor = change_tour(current);
         double lengh_cost = cal_length(cities, neighbor);
-        double delta = lengh_cost - currentCost;
+        double delta = lengh_cost - current_cost;
 
         if (delta < 0 || (exp(-delta / T) > ((double) rand() / RAND_MAX))) {
             current = neighbor;
-            currentCost = lengh_cost;
-            if (currentCost < bestCost) {
+            current_cost = lengh_cost;
+            if (current_cost < best_cost) {
                 best = current;
-                bestCost = currentCost;
+                best_cost = current_cost;
             }
+        }
+
+        // 每n次評估輸出一次當前狀態
+        if (evals % 1000 == 0) {
+            cout << "[eval=" << evals << "] T=" << T << ", current_cost=" << current_cost << endl;
         }
 
         T *= coolingRate;
@@ -107,7 +113,7 @@ void saveResult(const string &filename, const vector<int> &tour) {
 int main() {
     srand(time(0));
 
-    //數字之間沒關聯，職介創一個vector儲存我要跑的維度
+    //數字之間沒關聯，所以直接創一個vector儲存我要跑的維度
     vector<int> dims = {50, 100, 200, 500, 1000};
     
     for (int dim : dims) {
@@ -115,12 +121,23 @@ int main() {
         string outputFile = "output_Dim=" + to_string(dim) + ".txt";
 
         vector<city> cities;
-        readCities(inputFile, cities);
+        read_city(inputFile, cities);
+
+        auto start = chrono::high_resolution_clock::now();      //計時開始
+
+        cout << "Dimension = " << dim << "   start..." << endl;
 
         vector<int> result = simul_anneal(cities);
+
+        auto end = chrono::high_resolution_clock::now();        //計時結束
+        chrono::duration<double> elapsed = end - start;
+
         saveResult(outputFile, result);
 
-        cout << "Dimension_" << dim << " done." << outputFile << endl;
+        cout << "Dimension_" << dim << " done. "<< endl
+             << "Execution time: " << elapsed.count() << " sec"<< endl 
+             << "Best tour length: " << cal_length(cities, result) << endl
+             << endl << endl;
     }
     return 0;
 }
